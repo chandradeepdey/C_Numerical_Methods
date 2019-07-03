@@ -57,7 +57,7 @@ int diagonalMatrix(double ** matrix, int n)
         return 0;
 }
 
-// allocates an n x n + 1 matrix
+// allocates an n x 2n matrix
 // returns 0 if successful
 //         1 if out of memory
 //         2 if user enters nonpositive n
