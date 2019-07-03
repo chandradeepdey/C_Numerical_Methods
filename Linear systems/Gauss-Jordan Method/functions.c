@@ -4,15 +4,6 @@
 #include "functions.h"
 #include "inputlib.h"
 
-void solve(double ** matrix, double * solution, int n)
-{
-        int i;
-
-        for (i = n - 1; i >= 0; i--) {
-                solution[i] = matrix[i][n] / matrix[i][i];
-        }
-}
-
 /* from this point onwards, i and k are used for rows
  * j is used for columns. the range of j is from 0 through
  * n inclusive, while i and k have the range from 0 through
@@ -29,12 +20,12 @@ void printMatrix(double ** matrix, int n)
         putchar('\n');
 }
 
-void printSolution(const double * solution, int n)
+void printSolution(double ** matrix, int n)
 {
         int digit = (int) log10(n) + 1;
 
         for (int i = 0; i < n; i++)
-                printf("x[%*d]: % 8.6g\n", digit, i + 1, solution[i]);
+                printf("x[%*d]: % 8.6g\n", digit, i + 1, matrix[i][n]);
         putchar('\n');
 }
 
@@ -85,7 +76,7 @@ int diagonalMatrix(double ** matrix, int n)
 // returns 0 if successful
 //         1 if out of memory
 //         2 if user enters nonpositive n
-int allocate(double *** matrix, double ** solution, int * n)
+int allocate(double *** matrix, int * n)
 {
         int i;
 
@@ -118,14 +109,7 @@ int allocate(double *** matrix, double ** solution, int * n)
                 // out of memory while trying to allocate individual rows
                 if (i != *n) {
                         fputs("Out of memory!\n", stderr);
-                        deallocate(*matrix, *solution, *n);
-                        return 1;
-                }
-
-                *solution = calloc(*n, sizeof(double));
-                if (!solution) {
-                        fputs("Out of memory!\n", stderr);
-                        deallocate(*matrix, *solution, *n);
+                        deallocate(*matrix, *n);
                         return 1;
                 }
 
@@ -134,12 +118,11 @@ int allocate(double *** matrix, double ** solution, int * n)
         }
 }
 
-void deallocate(double ** matrix, double * solution, int n)
+void deallocate(double ** matrix, int n)
 {
         for (int i = 0; i < n; i++)
                 free(matrix[i]);
         free(matrix);
-        free(solution);
 }
 
 int takeInput(double ** matrix, int n)

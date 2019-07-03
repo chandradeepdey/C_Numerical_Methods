@@ -6,9 +6,8 @@ int main(int argc, char * argv[])
 {
         int n;
         double ** matrix;
-        double * solution;
 
-        int status = allocate(&matrix, &solution, &n);
+        int status = allocate(&matrix, &n);
         if (status == 1)
                 exit(EXIT_FAILURE);
         else if (status == 2) {
@@ -19,7 +18,7 @@ int main(int argc, char * argv[])
 
         if (takeInput(matrix, n)) {
                 fputs("Quitting program due to EOF or read error.\n", stderr);
-                deallocate(matrix, solution, n);
+                deallocate(matrix, n);
                 exit(EXIT_FAILURE);
         }
         puts("Here is the augmented matrix:");
@@ -27,16 +26,13 @@ int main(int argc, char * argv[])
 
         if (diagonalMatrix(matrix, n)) {
                 fputs("Cannot solve the system of linear equations.\n", stderr);
-                deallocate(matrix, solution, n);
+                deallocate(matrix, n);
                 exit(EXIT_FAILURE);
         }
-        puts("Here is the matrix after elementary row operations:");
-        printMatrix(matrix, n);
+        puts("Here is the solution vector after reducing the matrix to "
+                        "diagonal matrix:");
+        printSolution(matrix, n);
 
-        solve(matrix, solution, n);
-        puts("Here is the solution vector:");
-        printSolution(solution, n);
-
-        deallocate(matrix, solution, n);
+        deallocate(matrix, n);
         return EXIT_SUCCESS;
 }
