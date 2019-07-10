@@ -1,4 +1,4 @@
-/* C_inputlib version 2.5
+/* C_inputlib version 2.6
  */
 
 #include <stdio.h>
@@ -118,7 +118,7 @@ int get_int(FILE *stream)
         return (int) ret;
 }
 
-/* gets an double from a stream by persistently
+/* gets a double from a stream by persistently
  * nagging the user to enter the right thing
  *
  * Input
