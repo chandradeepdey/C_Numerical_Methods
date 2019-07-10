@@ -4,7 +4,7 @@
 #include "functions.h"
 #include "inputlib.h"
 
-void solve(double ** matrix, double * solution, int n)
+void solve(double **matrix, double *solution, int n)
 {
         int i, j;
 
@@ -22,7 +22,7 @@ void solve(double ** matrix, double * solution, int n)
  * n - 1 inclusive.
  */
 
-void printMatrix(double ** matrix, int n)
+void printMatrix(double **matrix, int n)
 {
         for (int i = 0; i < n; i++) {
                 for (int j = 0; j <= n; j++)
@@ -32,7 +32,7 @@ void printMatrix(double ** matrix, int n)
         putchar('\n');
 }
 
-void printSolution(const double * solution, int n)
+void printSolution(const double *solution, int n)
 {
         int digit = (int) log10(n) + 1;
 
@@ -41,7 +41,7 @@ void printSolution(const double * solution, int n)
         putchar('\n');
 }
 
-void swap(double ** matrix, int n, int row1, int row2)
+void swap(double **matrix, int n, int row1, int row2)
 {
         double temp;
         int j;
@@ -52,7 +52,7 @@ void swap(double ** matrix, int n, int row1, int row2)
         }
 }
 
-int triangularMatrix(double ** matrix, int n)
+int triangularMatrix(double **matrix, int n)
 {
         int i, j, k;
         double multiplier;
@@ -82,18 +82,18 @@ int triangularMatrix(double ** matrix, int n)
 // returns 0 if successful
 //         1 if out of memory
 //         2 if user enters nonpositive n
-int allocate(double *** matrix, double ** solution, int * n)
+int allocate(double ***matrix, double **solution, int *n)
 {
         int i;
 
         fputs("Enter the number of linear equations to solve: ",
         stdout);
-        *n = get_int();
+        *n = get_int(stdin);
         if (*n <= 0)
                 return 2;
         else {
                 // allocate an array of double pointers
-                *matrix = malloc(*n * sizeof(double *));
+                *matrix = malloc(*n * sizeof(double*));
                 if (*matrix) {
                         // calloc doesn't guarantee NULL pointers, so
                         // manually setting all to NULL after using just malloc
@@ -131,7 +131,7 @@ int allocate(double *** matrix, double ** solution, int * n)
         }
 }
 
-void deallocate(double ** matrix, double * solution, int n)
+void deallocate(double **matrix, double *solution, int n)
 {
         for (int i = 0; i < n; i++)
                 free(matrix[i]);
@@ -139,7 +139,7 @@ void deallocate(double ** matrix, double * solution, int n)
         free(solution);
 }
 
-int takeInput(double ** matrix, int n)
+int takeInput(double **matrix, int n)
 {
         int i, j;
         int digit = (int) log10(n) + 1;
@@ -149,12 +149,12 @@ int takeInput(double ** matrix, int n)
                 printf("Equation %*d\n", digit, i + 1);
                 for (j = 0; j < n; j++) {
                         printf("x[%*d]: ", digit, j + 1);
-                        matrix[i][j] = get_double();
+                        matrix[i][j] = get_double(stdin);
                 }
                 printf("y[%*d]: ", digit, i + 1);
-                matrix[i][n] = get_double();
+                matrix[i][n] = get_double(stdin);
         }
-        if (feof(stdin))
+        if (feof(stdin) || ferror(stdin))
                 return 1;
         else
                 return 0;
