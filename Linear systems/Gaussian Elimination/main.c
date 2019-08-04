@@ -7,7 +7,7 @@ int main(void)
 {
         fputs("Enter the number of equations to solve: ", stdout);
         const size_t N = (size_t) get_unsigned_long_long(stdin);
-        if (N <= 0) {
+        if (N == 0) {
                 fputs("Invalid number of equations.\n", stderr);
                 exit(EXIT_SUCCESS);
         }
