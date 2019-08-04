@@ -1,42 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "functions.h"
+#include "inputlib.h"
 
-int main(int argc, char * argv[])
+int main(void)
 {
-        int n;
-        double ** matrix;
-        double * solution;
-
-        int status = allocate(&matrix, &solution, &n);
-        if (status == 1)
-                exit(EXIT_FAILURE);
-        else if (status == 2) {
-                fputs("Quitting program due to invalid number of equations.\n",
-                stderr);
+        fputs("Enter the number of equations to solve: ", stdout);
+        const size_t N = (size_t) get_unsigned_long_long(stdin);
+        if (N <= 0) {
+                fputs("Invalid number of equations.\n", stderr);
                 exit(EXIT_SUCCESS);
         }
 
-        if (takeInput(matrix, n)) {
-                fputs("Quitting program due to EOF or read error.\n", stderr);
-                deallocate(matrix, solution, n);
+        double (*matrix)[N][N + 1];
+        double (*solution)[N];
+
+        if (allocate(N, &matrix, &solution)) {
+                fputs("Out of memory.\n", stderr);
+                free(matrix);
+                free(solution);
                 exit(EXIT_FAILURE);
         }
+
+        if (takeInput(N, *matrix)) {
+                fputs("Read error.\n", stderr);
+                free(matrix);
+                free(solution);
+                exit(EXIT_FAILURE);
+        }
+
         puts("Here is the augmented matrix:");
-        printMatrix(matrix, n);
+        printMatrix(N, *matrix);
 
-        if (triangularMatrix(matrix, n)) {
+        if (triangularMatrix(N, *matrix)) {
                 fputs("Cannot solve the system of linear equations.\n", stderr);
-                deallocate(matrix, solution, n);
+                free(matrix);
+                free(solution);
                 exit(EXIT_FAILURE);
         }
+
         puts("Here is the matrix after elementary row operations:");
-        printMatrix(matrix, n);
+        printMatrix(N, *matrix);
 
-        solve(matrix, solution, n);
+        solve(N, *matrix, *solution);
+        free(matrix);
+
         puts("Here is the solution vector:");
-        printSolution(solution, n);
+        printSolution(N, *solution);
+        free(solution);
 
-        deallocate(matrix, solution, n);
         return EXIT_SUCCESS;
 }

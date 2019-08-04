@@ -1,13 +1,12 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
-int allocate(double *** matrix, double ** solution, int * n);
-void deallocate(double ** matrix, double * solution, int n);
-int takeInput(double ** matrix, int n);
-int triangularMatrix(double ** matrix, int n);
-void swap(double ** matrix, int n, int row1, int row2);
-void solve(double ** matrix, double * solution, int n);
-void printMatrix(double ** matrix, int n);
-void printSolution(const double * solution, int n);
+int allocate(size_t N, double (**matrix)[N][N + 1], double (**solution)[N]);
+int takeInput(size_t N, double matrix[N][N + 1]);
+void printMatrix(size_t N, const double matrix[N][N + 1]);
+int triangularMatrix(size_t N, double matrix[N][N + 1]);
+void swap(size_t N, double matrix[N][N + 1], size_t row1, size_t row2);
+void solve(size_t N, const double matrix[N][N + 1], double solution[N]);
+void printSolution(size_t N, const double solution[N]);
 
 #endif

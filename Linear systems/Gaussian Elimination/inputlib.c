@@ -1,82 +1,63 @@
-/* C_inputlib version 2.6
+/* C_inputlib version 7.1
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <limits.h>
+#include <stdint.h>
 #include "inputlib.h"
 
-/* gets a string from a given stream
+/* gets a string upto the next newline from a given stream
  *
  * Parameters
- * 1) s is the char array where the string will be stored.
- * 2) n is the number of characters to be stored, including
- * the terminating null character
- * 3) stream is the stream from which input is taken. if stream
+ * 1) stream is the stream from which input is taken. if stream
  * is NULL, stdin is used.
  *
  * Return
- * NULL pointer if n is less than 1 or s is a NULL pointer
- * Otherwise returns the same as fgets(s, n, stream)
- *
- * Any input after the string until the next newline character
- * is consumed by this function
- * Behaviour is undefined if s cannot store n elements
+ * a pointer to the new string. In case there are errors allocating
+ * memory, NULL pointer is returned.
+ * If the return value is not NULL, it should be freed using free()
+ * before exiting the program.
  */
-char* get_string(char *restrict s, int n, FILE *restrict stream)
+char* get_dynstring(FILE *stream)
 {
-        if (n < 1 || s == NULL)
-                return NULL;
         if (stream == NULL)
                 stream = stdin;
 
-        char *ret;
-        char *newline;
+        char *ret, *temp = NULL;
+        size_t size = 1;
+        ret = malloc(size);
 
-        ret = fgets(s, n, stream);
-        if (ret) {
-                newline = strchr(s, '\n');
-                if (newline)
-                        /* input ended before string finished, process
-                         * newline character
-                         */
-                        *newline = '\0';
-                else
-                        /* input ended after string finished, clear
-                         * remaining input
-                         */
-                        clear_line(stream);
+        if (ret != NULL) {
+                int ch;
+                size_t i = 0;
+                while ((ch = getc(stream)), ch != '\n' && ch != EOF) {
+                        if (i == size - 1) {
+                                if (size <= SIZE_MAX / 2)
+                                        temp = realloc(ret, size * 2);
+                                if (temp != NULL) {
+                                        size *= 2;
+                                        ret = temp;
+                                        temp = NULL;
+                                } else {
+                                        free(ret);
+                                        ret = NULL;
+                                }
+                        }
+                        if (ret == NULL)
+                                break;
+                        ret[i] = ch;
+                        i++;
+                }
+                if (ret != NULL)
+                        ret[i] = '\0';
         }
 
         return ret;
 }
 
-/*
- * Any input until the next newline character is consumed by this function
- *
- * Inputs
- * 1) stream is the stream on which the operation is to be performed. stdin
- * is used if stream is NULL
- */
-void clear_line(FILE *stream)
-{
-        if (stream == NULL)
-                stream = stdin;
-
-        int ch;
-        while ((ch = getc(stream)) != '\n' && ch != EOF)
-                ;
-}
-
-/*
- * buffer used by functions below this point
- */
-#define STRSIZE 500
-static char input[STRSIZE];
-
-/* gets an int from a stream by persistently
+/* gets an unsigned long long int from a stream by persistently
  * nagging the user to enter the right thing
  *
  * Input
@@ -84,38 +65,42 @@ static char input[STRSIZE];
  * stdin is used if stream is NULL
  *
  * Return
- * Returns an int. 0 is returned in case of a read error
+ * Returns an unsigned long long int. 0 is returned in case of a read error
  * or EOF
  *
- * Any input after the int until the next newline character
+ * Any input after the unsigned int until the next newline character
  * is consumed by this function
  */
-int get_int(FILE *stream)
+unsigned long long int get_unsigned_long_long(FILE *stream)
 {
-        long ret;
-        char *status;
+        if (stream == NULL)
+                stream = stdin;
+
+        unsigned long long int ret = 0;
+        char *input;
         char *endptr;
 
-        while ((status = get_string(input, STRSIZE, stream)) != NULL) {
-                ret = strtol(input, &endptr, 0);
-                if (input == endptr) {
-                        fputs("Invalid input\n", stderr);
-                        continue;
-                } else if (ret > INT_MAX || ret < INT_MIN) {
-                        /* manually do this because strtol won't set it
-                         * unless input was > LONG_MAX or < LONG_MIN
-                         */
-                        fprintf(stderr, "%s\n", strerror(ERANGE));
+        char *checksign;
+
+        int valid = 0;
+        while (valid == 0 && feof(stream) == 0 && ferror(stream) == 0) {
+                if ((input = get_dynstring(stream)) != NULL) {
+                        checksign = strchr(input, '-');
                         errno = 0;
-                        continue;
-                } else
-                        break;
-        }
-        if (status == NULL) {
-                ret = 0;
+                        ret = strtoull(input, &endptr, 0);
+                        if (input == endptr
+                                        || (checksign != NULL
+                                                        && checksign < endptr))
+                                fputs("Invalid input\n", stderr);
+                        else if (errno == ERANGE)
+                                fprintf(stderr, "%s\n", strerror(ERANGE));
+                        else
+                                valid = 1;
+                        free(input);
+                }
         }
 
-        return (int) ret;
+        return ret;
 }
 
 /* gets a double from a stream by persistently
@@ -134,24 +119,26 @@ int get_int(FILE *stream)
  */
 double get_double(FILE *stream)
 {
-        double ret;
-        char *status;
+        if (stream == NULL)
+                stream = stdin;
+
+        double ret = 0;
+        char *input;
         char *endptr;
 
-        while ((status = get_string(input, STRSIZE, stream)) != NULL) {
-                ret = strtod(input, &endptr);
-                if (input == endptr) {
-                        fputs("Invalid input\n", stderr);
-                        continue;
-                } else if (errno == ERANGE) {
-                        fprintf(stderr, "%s\n", strerror(errno));
+        int valid = 0;
+        while (valid == 0 && feof(stream) == 0 && ferror(stream) == 0) {
+                if ((input = get_dynstring(stream)) != NULL) {
                         errno = 0;
-                        continue;
-                } else
-                        break;
-        }
-        if (status == NULL) {
-                ret = 0;
+                        ret = strtod(input, &endptr);
+                        if (input == endptr)
+                                fputs("Invalid input\n", stderr);
+                        else if (errno == ERANGE)
+                                fprintf(stderr, "%s\n", strerror(errno));
+                        else
+                                valid = 1;
+                        free(input);
+                }
         }
 
         return ret;
