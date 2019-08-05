@@ -41,6 +41,8 @@ void printMatrix(size_t N, const double matrix[N][N + 1])
         putchar('\n');
 }
 
+static void swap(size_t N, double matrix[N][N + 1], size_t row1, size_t row2);
+
 int triangularMatrix(size_t N, double matrix[N][N + 1])
 {
         double multiplier;
@@ -69,7 +71,7 @@ int triangularMatrix(size_t N, double matrix[N][N + 1])
         return 0;
 }
 
-void swap(size_t N, double matrix[N][N + 1], size_t row1, size_t row2)
+static void swap(size_t N, double matrix[N][N + 1], size_t row1, size_t row2)
 {
         double temp;
         for (size_t j = 0; j <= N; ++j) {
