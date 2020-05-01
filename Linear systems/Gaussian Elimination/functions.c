@@ -18,10 +18,10 @@ int takeInput(size_t N, double matrix[N][N + 1])
         puts("Please enter the matrix elements one by one.");
         for (size_t i = 0; i < N; ++i) {
                 for (size_t j = 0; j < N; ++j) {
-                        printf("x[%zd][%zd]: ", i + 1, j + 1);
+                        printf("x[%zu][%zu]: ", i + 1, j + 1);
                         matrix[i][j] = get_double(stdin);
                 }
-                printf("y[%zd]: ", i + 1);
+                printf("y[%zu]: ", i + 1);
                 matrix[i][N] = get_double(stdin);
         }
 
@@ -97,6 +97,6 @@ void solve(size_t N, const double matrix[N][N + 1], double solution[N])
 void printSolution(size_t N, const double solution[N])
 {
         for (size_t i = 0; i < N; ++i)
-                printf("x[%zd]: % 8.6g\n", i + 1, solution[i]);
+                printf("x[%zu]: % 8.6g\n", i + 1, solution[i]);
         putchar('\n');
 }
